@@ -1,1 +1,6 @@
-Flask==2.3.3cohere==4.34spacy==3.6.1python-dotenv==1.0.1gunicorn==21.2.0requests==2.31.0
+Flask==2.3.3
+cohere==4.34
+spacy==3.6.1
+python-dotenv==1.0.1
+gunicorn==21.2.0
+requests==2.31.0
