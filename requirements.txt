@@ -1,0 +1,1 @@
+Flask==2.3.3cohere==4.35.1spacy==3.7.2python-dotenv==1.0.1gunicorn==21.2.0requests==2.31.0en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1.tar.gz
