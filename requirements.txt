@@ -1,6 +1,7 @@
 Flask==2.3.3
 cohere==4.34
-spacy==3.6.1
+blis==0.7.9
+spacy==3.5.4
 python-dotenv==1.0.1
 gunicorn==21.2.0
 requests==2.31.0
