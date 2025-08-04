@@ -27,7 +27,7 @@ YOUTUBE_VIDEOS = {
         """
     },
     "history": {
-        "keywords": ["history", "origin", "where did takraw start"],
+        "keywords": ["history", "origin", "where did takraw start","history of Takraw"],
         "reply": "Here's a video on the history of Sepak Takraw:",
         "iframe": """
             <div class="video-container">
@@ -182,6 +182,32 @@ def get_response(user_input, user_id="default_user"):
         return {"text": "Please enter a message.", "suggestions": []}
 
     user_input_clean = user_input.strip().lower()
+    exit_keywords = ["bye", "exit", "goodbye", "see you", "quit", "end chat"]
+    if any(kw in user_input_clean for kw in exit_keywords):
+        return {
+            "text": "Before you go, would you mind filling out a quick survey to help us improve BolaBot?",
+            "suggestions": ["Yes, take me to the survey", "No thanks"],
+            "survey_link": "https://your-survey-link.com"
+    }
+    if user_input_clean in ["bye", "exit", "goodbye"]:
+        return {
+            "text": "Before you go, would you mind taking a quick survey to help improve BolaBot?",
+            "suggestions": [
+                {"text": "Yes, take me to the survey", "link": "https://forms.gle/your-survey-link"},
+                {"text": "No thanks"}
+        ]
+    }
+    if user_input_clean == "yes, take me to the survey":
+        return {
+            "text": "Great! Please click the link below to fill out the survey:<br><a href='https://docs.google.com/forms/d/e/1FAIpQLSdBgUQxuZi6AKn4md1vvYQGZf33mGzP85eJpAuvxa29ImiPGA/viewform?usp=sharing&ouid=116108412332228221224' target='_blank'>Take the Survey</a>",
+            "suggestions": ["Start over", "What can you do?"]
+    }
+    if user_input_clean == "no thanks":
+        return {
+        "text": "No worries at all! Thanks for chatting with me today.",
+        "suggestions": ["Start over", "What can you do?"]
+    }
+
 
     # Initialize memory
     if user_id not in user_memory:
@@ -189,7 +215,7 @@ def get_response(user_input, user_id="default_user"):
     if user_id not in user_insistence:
         user_insistence[user_id] = False
     # Greetings
-    if any(word in user_input_clean for word in ["hi", "hello", "hey"]):
+    if user_input_clean in ["hi", "hello", "hey"]:
         return {
             "text": "Hello! I’m BolaBot, your guide to Sepak Takraw. Ask me anything about the sport.",
             "suggestions": ["How to play Sepak Takraw?", "What is the history?", "Show me a Sepak Takraw ball."]
@@ -256,12 +282,12 @@ def get_response(user_input, user_id="default_user"):
         )
 
         response = cohere_client.chat(
-            message=prompt,
+            message=f"{system_prompt}\n\n{prompt}",
             chat_history=user_memory[user_id]["history"],
             model="command-r",
-            preamble=system_prompt,
             temperature=0.5
         )
+
 
         user_memory[user_id]["history"].append({"role": "USER", "message": user_input})
         user_memory[user_id]["history"].append({"role": "CHATBOT", "message": response.text})
