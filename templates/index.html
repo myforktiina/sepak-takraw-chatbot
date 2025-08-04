@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sepak Takraw Chatbot - BolaBot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .typing-indicator {
+    ont-style: italic;
+    color: #888;
+    margin-top: 5px;
+    }
+   .bot-img img {
+      max-width: 100px; 
+      height: auto;
+      margin-top: 8px;
+      border-radius: 6px;
+    }
+    .bot-msg iframe {
+      width: 100%;
+      max-width: 100%;
+      height: 215px;
+      border-radius: 10px;
+      margin-top: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-text">
+      <h1>🏐 Explore Sepak Takraw</h1>
+      <p>The fast-paced, high-flying sport you’ve never seen like this before.</p>
+      <a href="#facts" class="btn">Learn More</a>
+    </div>
+    <div class="hero-img">
+      <img src="{{ url_for('static', filename='hero1.jpg') }}" alt="Sepak Takraw Action">
+    </div>
+  </section>
+
+  <!-- Interesting Facts Section -->
+  <section id="facts" class="facts-section">
+    <h2>🏅 Did You Know?</h2>
+    <div class="facts-grid">
+      <div class="fact-card">
+        <img src="{{ url_for('static', filename='hero2.jpg') }}" alt="Takraw Speed">
+        <p>Players can spike the ball at over 100 km/h!</p>
+      </div>
+      <div class="fact-card">
+        <img src="{{ url_for('static', filename='hero3.jpg') }}" alt="Takraw History">
+        <p>The sport dates back to the 15th century in Southeast Asia.</p>
+      </div>
+      <div class="fact-card">
+        <img src="{{ url_for('static', filename='hero4.jpg') }}" alt="Takraw Ball">
+        <p>The ball is made from rattan or synthetic rubber for better bounce.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chatbot -->
+  <div class="chat-toggle" onclick="toggleChat()">💬</div>
+  <div class="chat-widget" id="chatWidget">
+    <div class="chat-header">
+      <img src="/static/bot-avatar.jpg" class="header-avatar" />
+        BolaBot<br>
+      <small id="current-time"></small>
+      <span onclick="toggleChat()" class="close-btn">✖</span>
+    </div>
+    <div class="chat-box" id="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Ask me something..." autocomplete="off" />
+      <button id="mic-btn">🎤</button>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    function toggleChat() {
+      const chat = document.getElementById("chatWidget");
+
+      if (chat.style.display === "block") {
+        // Animate slide out, then hide after animation completes
+        chat.classList.add("hide-slide");
+        setTimeout(() => {
+          chat.style.display = "none";
+          chat.classList.remove("fullscreen", "hide-slide");
+        }, 300); // Match animation time
+      } else {
+        chat.style.display = "block";
+        chat.classList.add("fullscreen");
+      }
+    }
+
+    function updateTime() {
+      const now = new Date();
+      const options = {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      };
+      const timeStr = now.toLocaleString("en-US", options);
+      document.getElementById("current-time").textContent = timeStr;
+    }
+
+    window.addEventListener("load", () => {
+      updateTime();
+      setInterval(updateTime, 60000);
+      const chatBox = document.getElementById("chat-box");
+    chatBox.innerHTML += `<div class="bot-msg">Hello! I'm BolaBot, your Sepak Takraw assistant. What should I call you?</div>`;
+    });
+
+    document.getElementById("user-input").addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+    function createSuggestionButtons(suggestions = []) {
+      if (!suggestions.length) return '';
+      return `
+        <div class="suggestion-buttons">
+          ${suggestions.map(s => `<button class="suggestion-btn" onclick="handleSuggestion('${s}')">${s}</button>`).join('')}
+        </div>`;
+    }
+
+    function handleSuggestion(text) {
+      document.getElementById("user-input").value = text;
+      sendMessage();
+    }
+    function sendMessage() {
+      const input = document.getElementById("user-input");
+      const message = input.value.trim();
+      const chatBox = document.getElementById("chat-box");
+      if (!message) return;
+
+      chatBox.innerHTML += `<div class="user-msg">${message}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      input.value = "";
+      input.disabled = true;
+
+      const typingIndicator = document.createElement("div");
+      typingIndicator.classList.add("typing-indicator");
+      typingIndicator.textContent = "BolaBot is typing...";
+      chatBox.appendChild(typingIndicator);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
+      })
+      .then(res => res.json())
+      .then(data => {
+        chatBox.removeChild(typingIndicator);
+
+        let replyText = typeof data.reply === "string" ? data.reply : data.reply.text;
+        let botMsgHTML = `<div class="bot-msg">${replyText}</div>`;
+
+        if (data.reply.image) {
+          botMsgHTML += `<div class="bot-img"><img src="${data.reply.image}" alt="Takraw Image" /></div>`;
+        }
+        if (data.reply.iframe) {
+          botMsgHTML += `<div class="bot-video">${data.reply.iframe}</div>`;
+        }
+
+        if (data.reply.suggestions) {
+          botMsgHTML += createSuggestionButtons(data.reply.suggestions);
+        }
+        chatBox.innerHTML += botMsgHTML;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      })
+      .catch(error => {
+        chatBox.removeChild(typingIndicator);
+        chatBox.innerHTML += `<div class="bot-msg">⚠️ Error: Couldn't connect to server.</div>`;
+      })
+      .finally(() => {
+        input.disabled = false;
+        input.focus();
+      });
+    }
+    const micBtn = document.getElementById('mic-btn');
+    const userInput = document.getElementById('user-input');
+
+    // Check for browser support
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      micBtn.addEventListener('click', () => {
+        recognition.start();
+        micBtn.textContent = '🎙️'; // Show recording icon
+      });
+
+      recognition.addEventListener('result', (event) => {
+        const transcript = event.results[0][0].transcript;
+        userInput.value = transcript;
+        document.getElementById('send-btn').click();
+        micBtn.textContent = '🎤'; // Reset icon
+      });
+
+      recognition.addEventListener('end', () => {
+        micBtn.textContent = '🎤';
+      });
+    } else {
+      micBtn.disabled = true;
+      micBtn.title = "Speech recognition not supported in this browser.";
+    }
+  </script>
+
+</body>
+</html>
+
+<footer style="padding: 30px; text-align: center; background: #f2f2f2ff; color: #555;">
+  &copy; 2025 BolaBot | Made with ❤️ for Sepak Takraw Fans
+</footer>
