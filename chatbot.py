@@ -220,6 +220,13 @@ def get_response(user_input, user_id="default_user"):
             "text": "Hello! I’m BolaBot, your guide to Sepak Takraw. Ask me anything about the sport.",
             "suggestions": ["How to play Sepak Takraw?", "What is the history?", "Show me a Sepak Takraw ball."]
         }
+    time_keywords = ["time", "current time", "date", "day", "today", "what time", "what's the time", "now"]
+    if any(kw in user_input_clean for kw in time_keywords):
+        now = datetime.now().strftime("%A, %d %B %Y %I:%M %p")
+        return {
+            "text": f"The current date and time is {now}.",
+            "suggestions": ["What is the history of Takraw?", "Show me a video", "Rules of the game"]
+        }
     # Name detection
     if user_memory[user_id]["name"] is None:
         name = extract_name(user_input)
