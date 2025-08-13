@@ -277,9 +277,8 @@ def get_response(user_input, user_id="default_user"):
 
     # Use Cohere AI to generate response
     try:
-        now = datetime.now().strftime("%A, %d %B %Y %I:%M %p")
         system_prompt = (
-            f"You are BolaBot, an expert on Sepak Takraw. Today is {now}. "
+            f"You are BolaBot, an expert on Sepak Takraw. "
             f"Answer questions clearly and helpfully about Sepak Takraw."
         )
 
